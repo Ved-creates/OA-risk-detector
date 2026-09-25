@@ -1,0 +1,187 @@
+{
+  "app_name": "OA Risk Detector",
+  "personality": "3 Editorial Mobile LIGHT (with iOS-Native Clean clinical spacing)",
+  "personality_one_liner": "A calm, professional, offline-first clinical movement screening tool designed with warm ivory tones, precise typography, and uncompromising medical responsibility.",
+  "color": {
+    "surface": "#F9F6F0",
+    "onSurface": "#2C2A29",
+    "surfaceSecondary": "#F2EFE9",
+    "onSurfaceSecondary": "#4A4745",
+    "surfaceTertiary": "#EAE5DC",
+    "onSurfaceTertiary": "#6B6764",
+    "surfaceInverse": "#1C1B1A",
+    "onSurfaceInverse": "#F9F6F0",
+    "brand": "#8B7D6B",
+    "brandPrimary": "#6E5E4E",
+    "onBrandPrimary": "#FFFFFF",
+    "brandSecondary": "#8B7D6B",
+    "onBrandSecondary": "#FFFFFF",
+    "brandTertiary": "#D6CEC2",
+    "onBrandTertiary": "#3B342B",
+    "success": "#5C6B53",
+    "onSuccess": "#FFFFFF",
+    "warning": "#A37C4B",
+    "onWarning": "#FFFFFF",
+    "error": "#9E4F4F",
+    "onError": "#FFFFFF",
+    "info": "#6B7A8B",
+    "onInfo": "#FFFFFF",
+    "border": "#DDD6C9",
+    "borderStrong": "#B8AD9C",
+    "divider": "#E6DFD3",
+    "muted": "#7A7570",
+    "onBrand": "#FFFFFF"
+  },
+  "typography": {
+    "displayFontFamily": "PlayfairDisplay_400Regular",
+    "textFontFamily": "PlusJakartaSans_400Regular",
+    "scale": {
+      "sm": 12,
+      "base": 14,
+      "lg": 16,
+      "xl": 20,
+      "2xl": 24
+    }
+  },
+  "spacing": {
+    "rule": "Generous vertical editorial rhythm with 16-24pt card padding and strict touch targets >= 44pt",
+    "xs": 4,
+    "sm": 8,
+    "md": 12,
+    "lg": 16,
+    "xl": 24,
+    "2xl": 32,
+    "3xl": 48
+  },
+  "radius_tokens": {
+    "sm": 6,
+    "md": 12,
+    "lg": 20,
+    "pill": 999
+  },
+  "shadow_tier": "1",
+  "navigation": "stack_only",
+  "icon_set": "Ionicons",
+  "glassmorphism": {
+    "enabled": false,
+    "do's": [
+      "Use solid warm ivory and stone surfaces",
+      "Keep contrast high and clinical"
+    ],
+    "dont's": [
+      "No neon blur or purple gradients",
+      "No futuristic glowing elements"
+    ]
+  },
+  "platform_libraries": {
+    "glass": {
+      "ios": "expo-blur",
+      "android": "expo-blur",
+      "low_end_android_fallback": "solid surfaceSecondary"
+    },
+    "image": "expo-image",
+    "blur": "expo-blur",
+    "bottom_sheet": "@gorhom/bottom-sheet",
+    "animation": "react-native-reanimated",
+    "gesture": "react-native-gesture-handler"
+  },
+  "screens": [
+    {
+      "name": "Home",
+      "purpose": "Launch hub showing offline system status (Camera, Storage, ML, BLE) and direct path to New Assessment, History, and Settings.",
+      "states": {
+        "loading": "Checking local Room database and CameraX services...",
+        "empty": "No recent assessments recorded.",
+        "error": "Local storage or camera initialization warning."
+      },
+      "layout": "Vertical scroll with prominent brand header, quick action card for NEW ASSESSMENT, secondary grid for Patients, History, Settings, and real-time system status footer."
+    },
+    {
+      "name": "PatientDetails",
+      "purpose": "Collects patient identity, anthropometric data (age, sex, height, weight), and target body region with local Room persistence.",
+      "states": {
+        "loading": "Loading patient registry...",
+        "empty": "Enter patient details below to begin screening.",
+        "error": "Required fields missing or invalid data format."
+      },
+      "layout": "Form container with labeled text inputs, single-column layout, and sticky bottom CONTINUE button with safe area inset."
+    },
+    {
+      "name": "Questionnaire",
+      "purpose": "Guided 17-question clinical screening with horizontal right-to-left slide transitions, conditional follow-ups, and answer preservation.",
+      "states": {
+        "loading": "Loading clinical questions...",
+        "empty": "Questionnaire unavailable.",
+        "error": "Failed to record response."
+      },
+      "layout": "One question per screen view with smooth horizontal slide animation, progress indicator, choice cards, and sticky Back / Next controls."
+    },
+    {
+      "name": "QuestionnaireReview",
+      "purpose": "Displays complete summary of all 17 questionnaire responses before initiating camera movement screening.",
+      "states": {
+        "loading": "Compiling questionnaire responses...",
+        "empty": "No responses recorded.",
+        "error": "Missing mandatory questionnaire data."
+      },
+      "layout": "Scrollable review list grouped by category with edit shortcuts and a sticky START MOVEMENT ASSESSMENT button."
+    },
+    {
+      "name": "AssessmentSetup",
+      "purpose": "Pre-assessment briefing showing instructions, patient summary, body region, and camera preparation guidelines.",
+      "states": {
+        "loading": "Preparing assessment environment...",
+        "empty": "Assessment parameters not found.",
+        "error": "Camera permission or hardware error."
+      },
+      "layout": "Instructional card deck with numbered steps, compliance disclaimer, and sticky START CAMERA ASSESSMENT button."
+    },
+    {
+      "name": "CameraAssessment",
+      "purpose": "Real-time CameraX and MediaPipe pose tracking capturing knee angles, ROM, angular velocity, cadence, symmetry, and quality metrics.",
+      "states": {
+        "loading": "Initializing CameraX and Pose Landmarker...",
+        "empty": "Waiting for camera stream...",
+        "error": "Both legs not visible in frame. Please adjust camera position."
+      },
+      "layout": "Split-view layout featuring live camera preview (or 3D avatar view), real-time parameter tiles, assessment quality status indicators, and PAUSE/FINISH controls."
+    },
+    {
+      "name": "AssessmentSummary",
+      "purpose": "Results summary screen showing movement measurements, personal baseline comparison, quality metrics, and required non-diagnostic disclaimers.",
+      "states": {
+        "loading": "Computing movement features...",
+        "empty": "No measurement data recorded.",
+        "error": "Failed to compute movement summary."
+      },
+      "layout": "Card-based metric dashboard with ROM, cadence, step time, symmetry, baseline comparison, and mandatory referral-support disclaimer text."
+    },
+    {
+      "name": "History",
+      "purpose": "Chronological list of all completed offline local assessments per patient with detail view access.",
+      "states": {
+        "loading": "Loading assessment history from Room database...",
+        "empty": "No assessments recorded yet.",
+        "error": "Database read error."
+      },
+      "layout": "FlatList of assessment record cards showing date, region, test type, status, and detail chevron."
+    },
+    {
+      "name": "Settings",
+      "purpose": "System configuration, offline database status, future BLE/IoT and ML model status overview, and data management.",
+      "states": {
+        "loading": "Loading system configuration...",
+        "empty": "No settings available.",
+        "error": "Failed to read configuration."
+      },
+      "layout": "Grouped setting rows with system status indicators, integration provider mock statuses, and local database storage management."
+    }
+  ],
+  "images": {
+    "medical_texture": {
+      "url": "https://images.unsplash.com/photo-1636837955417-2d8a4e49368f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzNzl8MHwxfHNlYXJjaHwxfHxjbGluaWNhbCUyMG9ydGhvcGVkaWNzJTIwbWVkaWNhbCUyMGl2b3J5JTIwbWluaW1hbGlzdCUyMGJhY2tncm91bmR8ZW58MHx8fHwxNzkwMzYyNTkyfDA&ixlib=rb-4.1.0&q=85",
+      "alt": "Warm ivory clinical background texture"
+    }
+  },
+  "instructions_to_main_agent": "Implement the offline Android OA Risk Detector app strictly adhering to the warm ivory/beige clinical palette, one-question-at-a-time horizontal questionnaire, real-time camera assessment metrics, Room database storage, 3D avatar viewport, and strict non-diagnostic medical disclaimers. Ensure all code compiles cleanly in Expo/React Native with zero mock AI diagnosis or internet dependencies."
+}
