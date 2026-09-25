@@ -1,4 +1,4 @@
-// Design tokens for this app. Light theme only.Always modify the colors and theme to Dark, Light or Dark and Light according to the design guidelines.
+// Design tokens for the OA Risk Detector clinical interface.
 //
 // The keys match the "color" block of /app/design_guidelines.json. Fill the
 // values from that file (or from the user's brand colors). Keep every key; do
@@ -40,49 +40,49 @@ const light = {
   // Surfaces: backgrounds, from the screen down to small fills.
   // Each `on` key is the text and icon color for that background.
   // ---------------------------------------------------------------------------
-  surface: "#FFFFFF", // primary canvas, most of every screen
-  onSurface: "#111827", // text and icons on the canvas
-  surfaceSecondary: "#F9FAFB", // cards, sheets, list rows
-  onSurfaceSecondary: "#374151", // text and icons on cards, sheets, rows
-  surfaceTertiary: "#F3F4F6", // input backgrounds, chips, deepest nesting
-  onSurfaceTertiary: "#4B5563", // text on inputs and chips; also muted text
-  surfaceInverse: "#1F2937", // tooltips, snackbars, anything popping against the theme
-  onSurfaceInverse: "#FFFFFF", // text and icons on the inverse surface
-  muted: "#6B7280", // subdued text on surface: captions, timestamps, placeholders
+  surface: "#F9F6F0",
+  onSurface: "#2C2A29",
+  surfaceSecondary: "#F2EFE9",
+  onSurfaceSecondary: "#4A4745",
+  surfaceTertiary: "#EAE5DC",
+  onSurfaceTertiary: "#6B6764",
+  surfaceInverse: "#1C1B1A",
+  onSurfaceInverse: "#F9F6F0",
+  muted: "#7A7570",
 
   // ---------------------------------------------------------------------------
   // Brand: the identity color and the fills built from it.
   // Neutral by default; replace with the design guidelines values.
   // ---------------------------------------------------------------------------
-  brand: "#111827", // base hue, anchor only; Primary, Secondary, Tertiary are weights of it
-  onBrand: "#FFFFFF", // text and icons placed directly on brand
-  brandPrimary: "#111827", // primary CTA, active tab indicator, selected states
+  brand: "#8B7D6B",
+  onBrand: "#FFFFFF",
+  brandPrimary: "#6E5E4E",
   onBrandPrimary: "#FFFFFF", // text and icons on brandPrimary
-  brandSecondary: "#E5E7EB", // secondary CTA, less prominent accents
-  onBrandSecondary: "#111827", // text and icons on brandSecondary
-  brandTertiary: "#F3F4F6", // chips, tags, badges, subtle brand moments
-  onBrandTertiary: "#111827", // text and icons on brandTertiary
+  brandSecondary: "#8B7D6B",
+  onBrandSecondary: "#FFFFFF",
+  brandTertiary: "#D6CEC2",
+  onBrandTertiary: "#3B342B",
 
   // ---------------------------------------------------------------------------
   // Status: semantic only, never decorative. Fill for badges, banners and
   // toasts; the `on` key is text on that fill. The plain key is also safe as
   // text on `surface`.
   // ---------------------------------------------------------------------------
-  success: "#15803D",
+  success: "#5C6B53",
   onSuccess: "#FFFFFF",
-  warning: "#B45309",
+  warning: "#A37C4B",
   onWarning: "#FFFFFF",
-  error: "#B91C1C",
+  error: "#9E4F4F",
   onError: "#FFFFFF",
-  info: "#1D4ED8",
+  info: "#6B7A8B",
   onInfo: "#FFFFFF",
 
   // ---------------------------------------------------------------------------
   // Lines
   // ---------------------------------------------------------------------------
-  border: "#E5E7EB", // hairline outline, 0.5pt or 1pt max: inputs, cards
-  borderStrong: "#D1D5DB", // focus rings, selected outlines, 1.5pt max
-  divider: "#E5E7EB", // subtle list separators
+  border: "#DDD6C9",
+  borderStrong: "#B8AD9C",
+  divider: "#E6DFD3",
 };
 
 export type ThemeColors = typeof light;
@@ -108,7 +108,7 @@ setColorScheme?.(themes.dark ? null : defaultScheme);
 
 export function useTheme(): { scheme: ColorScheme; colors: ThemeColors } {
   const system = useColorScheme();
-  const scheme: ColorScheme = system && themes[system] ? system : defaultScheme;
+  const scheme: ColorScheme = system === "dark" && themes.dark ? "dark" : defaultScheme;
   return { scheme, colors: themes[scheme] ?? themes.light };
 }
 
