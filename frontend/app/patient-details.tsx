@@ -75,23 +75,27 @@ export default function PatientDetails() {
     const patientId = form.patientId.trim() || generatePatientId();
     setSaving(true);
     setStorageError(false);
-    const didSave = await savePatient({
-      patientId,
-      name: form.name.trim(),
-      age,
-      sex: form.sex,
-      height,
-      weight,
-      bodyRegion: form.bodyRegion as BodyRegion,
-      createdAt: new Date().toISOString(),
-    });
-    setSaving(false);
-
-    if (!didSave) {
+    try {
+      const didSave = await savePatient({
+        patientId,
+        name: form.name.trim(),
+        age,
+        sex: form.sex,
+        height,
+        weight,
+        bodyRegion: form.bodyRegion as BodyRegion,
+        createdAt: new Date().toISOString(),
+      });
+      if (!didSave) {
+        setStorageError(true);
+        return;
+      }
+      setSavedPatientId(patientId);
+    } catch {
       setStorageError(true);
-      return;
+    } finally {
+      setSaving(false);
     }
-    setSavedPatientId(patientId);
   };
 
   return (
@@ -104,7 +108,7 @@ export default function PatientDetails() {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.topBar}>
-            <Pressable onPress={() => router.back()} style={styles.backButton} hitSlop={8} accessibilityRole="button" accessibilityLabel="Go back">
+            <Pressable onPress={() => router.back()} testID="patient-back-button" style={styles.backButton} hitSlop={8} accessibilityRole="button" accessibilityLabel="Go back">
               <Ionicons name="arrow-back" size={21} color={colors.onSurface} />
             </Pressable>
             <Text style={styles.stepLabel}>NEW ASSESSMENT · 01</Text>
@@ -132,7 +136,7 @@ export default function PatientDetails() {
             </View>
             <View style={styles.chipWrap}>
               {SEX_OPTIONS.map((option) => (
-                <ChoiceChip key={option} label={option} selected={form.sex === option} onPress={() => update("sex", option)} />
+                <ChoiceChip key={option} label={option} selected={form.sex === option} onPress={() => update("sex", option)} testID={`sex-option-${option.toLowerCase().replace(/\s+/g, "-")}`} />
               ))}
             </View>
             <View style={styles.twoColumn}>
@@ -150,7 +154,7 @@ export default function PatientDetails() {
             <Text style={styles.fieldLabel}>Area being assessed <Text style={styles.required}>*</Text></Text>
             <View style={styles.regionGrid}>
               {BODY_REGIONS.map((region) => (
-                <ChoiceChip key={region} label={region} selected={form.bodyRegion === region} onPress={() => update("bodyRegion", region)} wide />
+                <ChoiceChip key={region} label={region} selected={form.bodyRegion === region} onPress={() => update("bodyRegion", region)} testID={`body-region-${region.toLowerCase().replace(/\s+/g, "-")}`} wide />
               ))}
             </View>
             {errors.bodyRegion ? <Text style={styles.errorText}>{errors.bodyRegion}</Text> : null}
@@ -217,6 +221,7 @@ function Field({
         onChangeText={onChangeText}
         keyboardType={keyboardType}
         autoCapitalize={autoCapitalize}
+        testID={`patient-input-${label.toLowerCase().replace(/\s+/g, "-")}`}
         style={[styles.input, error && styles.inputError, !editable && styles.inputDisabled]}
       />
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
@@ -224,10 +229,10 @@ function Field({
   );
 }
 
-function ChoiceChip({ label, selected, onPress, wide = false }: { label: string; selected: boolean; onPress: () => void; wide?: boolean }) {
+function ChoiceChip({ label, selected, onPress, wide = false, testID }: { label: string; selected: boolean; onPress: () => void; wide?: boolean; testID?: string }) {
   const styles = useStyles();
   return (
-    <Pressable onPress={onPress} accessibilityRole="radio" accessibilityState={{ selected }} style={({ pressed }) => [styles.chip, wide && styles.regionChip, selected && styles.chipSelected, pressed && styles.chipPressed]}>
+    <Pressable onPress={onPress} testID={testID} accessibilityRole="radio" accessibilityState={{ selected }} style={({ pressed }) => [styles.chip, wide && styles.regionChip, selected && styles.chipSelected, pressed && styles.chipPressed]}>
       {selected ? <Ionicons name="checkmark" size={14} color={styles.chipSelectedText.color as string} /> : null}
       <Text style={[styles.chipText, selected && styles.chipSelectedText]}>{label}</Text>
     </Pressable>

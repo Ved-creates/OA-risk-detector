@@ -1,0 +1,35 @@
+{
+  "summary": "Checkpoint 1 frontend smoke testing passed on the public Expo preview at a 375x667 mobile viewport. Home, required-field validation, body-region choices, generated patient ID, local save confirmation, return navigation, offline count refresh, prohibited-claims check, and horizontal overflow checks were exercised.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": []
+  },
+  "test_report_links": [
+    "/tmp/oa-checkpoint1/home-after-save.png"
+  ],
+  "action_items": [
+    "Consider adding explicit testID attributes to Patient Details inputs, back button, sex chips, and body-region chips for robust automated coverage; current controls are accessible by placeholder/label/text selectors."
+  ],
+  "critical_code_review_comments": [
+    "The requested checkpoint behavior is implemented without backend or mocked API dependencies.",
+    "savePatient errors are represented by a boolean, but an unexpected storage rejection from getPatients/setItem would escape handleContinue rather than reaching storageError; consider a try/catch in a later hardening pass."
+  ],
+  "updated_files": [
+    "/app/test_reports/iteration_1.json"
+  ],
+  "success_rate": {
+    "backend": "not tested (frontend-only request)",
+    "frontend": "100%"
+  },
+  "seed_data_creation": "One test patient was saved locally in the browser preview storage during the smoke test.",
+  "retest_needed": false,
+  "should_call_test_agent_after_fix": false,
+  "context_for_next_testing_agent": "The first save test generated an OA-YYYYMMDD-XXXX patient ID and showed local confirmation. A duplicate mounted home node appeared transiently after router.replace; this was a selector strictness artifact, not a functional failure. A fresh run showed one home node, correct count behavior, usable back navigation, and no horizontal overflow.",
+  "rca_of_issue": "No functional issue reproduced. The only automation failure was waiting on a strict home-screen selector while two transient route nodes existed after replace; using a count/visible-node assertion resolved it."
+}
