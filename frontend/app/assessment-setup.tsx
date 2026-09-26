@@ -140,7 +140,7 @@ export default function AssessmentSetup() {
           <Ionicons name="camera-outline" size={18} color={colors.onBrandPrimary} />
           <Text style={styles.primaryText}>START CAMERA</Text>
         </Pressable>
-        <Text style={styles.footerHint}>Camera access is requested on the next screen.</Text>
+        <Text style={styles.footerHint}>Camera access is requested on the next screen. The pose model downloads once on first use.</Text>
       </ScrollView>
     </View>
   );

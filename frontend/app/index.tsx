@@ -6,7 +6,7 @@ import { useCallback, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { getAssessmentCount } from "@/src/utils/storage/assessmentStorage";
+import { getAssessmentCount, storageEngine } from "@/src/utils/storage/assessmentStorage";
 import { getPatientCount } from "@/src/utils/storage/patientStorage";
 import { makeStyles, useTheme } from "@/src/theme";
 
@@ -88,7 +88,8 @@ export default function Index() {
 
         <View style={styles.statusPanel}>
           <StatusRow icon="camera-outline" label="Camera" value={cameraStatus.value} tone={cameraStatus.tone} />
-          <StatusRow icon="save-outline" label="Local storage" value="Available" tone="success" />
+          <StatusRow icon="body-outline" label="Pose detection" value="MediaPipe · downloads on first use" tone="success" />
+          <StatusRow icon="save-outline" label="Local storage" value={storageEngine === "sqlite" ? "SQLite on device" : "Available"} tone="success" />
           <StatusRow icon="hardware-chip-outline" label="ML model" value="Not installed" tone="muted" />
           <StatusRow icon="bluetooth-outline" label="BLE" value="Not connected" tone="muted" />
         </View>

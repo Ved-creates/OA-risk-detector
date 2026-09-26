@@ -35,6 +35,16 @@ The supplied camera prototype contains real Python/OpenCV/MediaPipe logic for po
 
 ## Implemented with dates
 
+### 2026-09-26 — Real pose tracking, personal baseline, SQLite
+
+- **Pose provider (MediaPipe Pose Landmarker in a WebView/iframe):** `src/pose/poseHtml.ts` builds a self-contained page that runs `@mediapipe/tasks-vision@0.10.35` (WASM, GPU→CPU fallback, `pose_landmarker_lite` model from Google storage, downloaded once on first use) on the live camera stream, draws the skeleton, and posts lower-body landmarks (image + world coords + visibility) to the app. `PoseCamera.tsx` (react-native-webview, native) / `PoseCamera.web.tsx` (iframe, preview). Camera flip and retry supported.
+- **MovementTracker (`src/pose/movementTracker.ts`):** pure TS; knee flexion angle from hip–knee–ankle (3D world landmarks), EMA smoothing, per-side visibility gating, robust ROM (2–98th percentile), 95th-percentile angular velocity, hysteresis repetition counting, step detection from inter-ankle distance peaks → cadence, mean step time, left/right step-time symmetry (%). Quality: VALID / INSUFFICIENT with explicit reasons (no frames, too short, low visibility). Verified with synthetic signals (`scripts/tracker-check.ts`).
+- **Camera screen:** live metric panel (left/right knee angle, ROM, reps or steps/cadence, frames, visibility) updating at 4 Hz while ASSESSING; final features computed on COMPLETE; insufficient sessions are never saved silently — a QUALITY CHECK panel offers RETRY or SAVE AS INSUFFICIENT.
+- **Assessment record v2:** `cameraFeatures` (provider, knee ROM L/R, angular velocity, cadence, step symmetry, step time, repetitions, frame count) + `quality` (state, pose visibility, note); frame-level raw series saved separately (`frame_series`).
+- **Personal baseline (`src/assessment/baseline.ts`):** summary shows the same patient's earlier VALID assessments of the same test side by side (This | date | date). No arithmetic, no norms.
+- **SQLite (`src/db/index.ts`, expo-sqlite):** tables `patients`, `questionnaire_drafts`, `assessments` (indexed core columns + JSON record), `frame_series`; one-time import of earlier AsyncStorage records. `src/db/index.web.ts` keeps the AsyncStorage implementation for the web preview. Storage modules delegate to `localDb`.
+- Home status: Pose detection row, storage engine row. Lint, TypeScript, tracker unit checks, and full end-to-end regression (testing agent, iteration 3) pass.
+
 ### 2026-09-26 — Checkpoint 3
 
 - Review "Confirm & Continue" now routes into Assessment Setup.
@@ -100,6 +110,7 @@ The supplied camera prototype contains real Python/OpenCV/MediaPipe logic for po
 
 ## Next tasks
 
-1. Checkpoint 4: on-device pose provider (`CameraFeatureProvider`) adapting the supplied MediaPipe measurement logic; replace `--` only with real values.
-2. Checkpoint 5: migrate AsyncStorage entities (Patient, QuestionnaireDraft, Assessment) to expo-sqlite relational schema.
-3. Checkpoint 6: personal baseline computed from prior VALID assessments; Patients list screen.
+1. Validate the WebView pose provider on a real Android phone (Expo Go): camera permission hand-off to the WebView, model download, frame rate.
+2. Patients list screen and repeat assessment for an existing patient.
+3. Native production pose provider (VisionCamera + TFLite) behind the same `PoseMessage` contract for fully offline use.
+4. Raw frame-series export (CSV/JSON) separate from patient records.

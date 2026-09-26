@@ -1,20 +1,12 @@
-import { storage } from "@/src/utils/storage";
+import { localDb } from "@/src/db";
 import type { Patient } from "@/src/types/patient";
 
-const PATIENTS_KEY = "oa-risk-detector/patients";
-
-export async function getPatients(): Promise<Patient[]> {
-  const patients = await storage.getItem<Patient[]>(PATIENTS_KEY, []);
-  return patients ?? [];
+export function getPatients(): Promise<Patient[]> {
+  return localDb.getPatients();
 }
 
-export async function savePatient(patient: Patient): Promise<boolean> {
-  const patients = await getPatients();
-  const nextPatients = [
-    patient,
-    ...patients.filter((existing) => existing.patientId !== patient.patientId),
-  ];
-  return storage.setItem(PATIENTS_KEY, nextPatients);
+export function savePatient(patient: Patient): Promise<boolean> {
+  return localDb.savePatient(patient);
 }
 
 export async function getPatientCount(): Promise<number> {

@@ -60,14 +60,3 @@ export const FRAMING_TIPS: { title: string; detail: string }[] = [
   { title: "Clothing", detail: "Fitted clothing helps the joints stay visible." },
   { title: "Space", detail: "Clear the area so movement is not blocked." },
 ];
-
-// Metric slots shown in the camera step. Values remain "--" until a real
-// on-device pose provider is connected. Labels only — no thresholds.
-export const METRIC_SLOTS: { key: string; label: string; unit: string }[] = [
-  { key: "kneeRomDeg", label: "Knee ROM", unit: "°" },
-  { key: "peakAngularVelocityDegS", label: "Peak angular velocity", unit: "°/s" },
-  { key: "cadenceStepsPerMin", label: "Cadence", unit: "steps/min" },
-  { key: "stepSymmetry", label: "Step symmetry", unit: "" },
-  { key: "stanceTimeS", label: "Stance time", unit: "s" },
-  { key: "poseVisibility", label: "Pose visibility", unit: "" },
-];

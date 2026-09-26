@@ -5,11 +5,13 @@ import { useEffect, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { getBaseline, type Baseline } from "@/src/assessment/baseline";
 import { formatDate, qualityLabel } from "@/src/assessment/format";
-import { METRIC_SLOTS, MOVEMENT_TEST_INFO } from "@/src/assessment/movementTests";
+import { formatMetric, metricValue, slotsForTest } from "@/src/assessment/metrics";
+import { MOVEMENT_TEST_INFO } from "@/src/assessment/movementTests";
 import { makeStyles, useTheme } from "@/src/theme";
 import type { Assessment } from "@/src/types/assessment";
-import { getAssessment } from "@/src/utils/storage/assessmentStorage";
+import { getAssessment, getFrameSeriesCount, storageEngine } from "@/src/utils/storage/assessmentStorage";
 
 export default function AssessmentSummary() {
   const router = useRouter();
@@ -18,6 +20,8 @@ export default function AssessmentSummary() {
   const styles = useStyles();
   const { assessmentId } = useLocalSearchParams<{ assessmentId?: string }>();
   const [assessment, setAssessment] = useState<Assessment | null>(null);
+  const [baseline, setBaseline] = useState<Baseline | null>(null);
+  const [frameCount, setFrameCount] = useState(0);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
@@ -25,13 +29,21 @@ export default function AssessmentSummary() {
       setLoaded(true);
       return;
     }
-    getAssessment(assessmentId).then((a) => {
+    getAssessment(assessmentId).then(async (a) => {
       setAssessment(a);
+      if (a) {
+        const [b, n] = await Promise.all([getBaseline(a), getFrameSeriesCount(a.assessmentId)]);
+        setBaseline(b);
+        setFrameCount(n);
+      }
       setLoaded(true);
     });
   }, [assessmentId]);
 
   const testLabel = assessment ? MOVEMENT_TEST_INFO[assessment.movementTest]?.label ?? assessment.movementTest : "";
+  const slots = assessment ? slotsForTest(assessment.movementTest) : [];
+  const previous = baseline?.previous ?? [];
+  const qualityTone = assessment?.quality.state === "VALID" ? colors.success : assessment?.quality.state === "INSUFFICIENT" ? colors.error : colors.warning;
 
   return (
     <View style={styles.screen} testID="assessment-summary-screen">
@@ -73,24 +85,54 @@ export default function AssessmentSummary() {
 
             <Text style={styles.sectionTitle}>MOVEMENT MEASUREMENTS</Text>
             <View style={styles.qualityRow} testID="quality-state">
-              <View style={[styles.qualityDot, { backgroundColor: colors.warning }]} />
+              <View style={[styles.qualityDot, { backgroundColor: qualityTone }]} />
               <Text style={styles.qualityText}>Quality: {qualityLabel(assessment.quality.state)}</Text>
             </View>
             <View style={styles.metricGrid}>
-              {METRIC_SLOTS.map((slot) => (
-                <View key={slot.key} style={styles.metric}>
+              {slots.map((slot) => (
+                <View key={slot.key} style={styles.metric} testID={`summary-metric-${slot.key}`}>
                   <Text style={styles.metricLabel}>{slot.label}</Text>
-                  <Text style={styles.metricValue}>--</Text>
-                  <Text style={styles.metricUnit}>{slot.unit || "Not available"}</Text>
+                  <Text style={styles.metricValue}>{formatMetric(metricValue(assessment, slot.key), slot.unit)}</Text>
+                  <Text style={styles.metricUnit}>{slot.unit}</Text>
                 </View>
               ))}
             </View>
             <Text style={styles.qualityNote}>{assessment.quality.note}</Text>
+            <Text style={styles.qualityNote}>
+              Provider: {assessment.cameraFeatures.provider === "mediapipe_webview" ? "MediaPipe pose (on device)" : "none"} · {frameCount} raw frames stored separately · {storageEngine === "sqlite" ? "SQLite" : "local storage"}
+            </Text>
 
             <Text style={styles.sectionTitle}>PERSONAL BASELINE</Text>
-            <Text style={styles.baselineText}>
-              A baseline is created from this person&apos;s previous measured assessments. No measured values exist yet, so no comparison is shown.
-            </Text>
+            {previous.length === 0 ? (
+              <Text style={styles.baselineText} testID="baseline-empty">
+                {assessment.quality.state === "VALID"
+                  ? "This is the first valid measured " + testLabel.toLowerCase() + " assessment for this person. Later assessments will be shown next to it."
+                  : "A baseline is built from this person's earlier valid measured assessments of the same test. None are available for comparison."}
+              </Text>
+            ) : (
+              <View testID="baseline-table">
+                <Text style={styles.baselineText}>
+                  Values from this person&apos;s earlier valid {testLabel.toLowerCase()} assessments, shown side by side. No comparison score is calculated.
+                </Text>
+                <View style={styles.baselineHeader}>
+                  <Text style={[styles.baselineCell, styles.baselineLabelCell, styles.baselineHeaderText]}>Metric</Text>
+                  <Text style={[styles.baselineCell, styles.baselineHeaderText]}>This</Text>
+                  {previous.slice(0, 2).map((p) => (
+                    <Text key={p.assessmentId} style={[styles.baselineCell, styles.baselineHeaderText]}>{shortDate(p.createdAt)}</Text>
+                  ))}
+                </View>
+                {slots.map((slot) => (
+                  <View key={slot.key} style={styles.baselineRow}>
+                    <Text style={[styles.baselineCell, styles.baselineLabelCell, styles.baselineLabel]}>{slot.label}{slot.unit ? ` (${slot.unit})` : ""}</Text>
+                    <Text style={[styles.baselineCell, styles.baselineValue]}>{formatMetric(metricValue(assessment, slot.key), slot.unit)}</Text>
+                    {previous.slice(0, 2).map((p) => (
+                      <Text key={p.assessmentId} style={[styles.baselineCell, styles.baselineValue]}>{formatMetric(metricValue(p, slot.key), slot.unit)}</Text>
+                    ))}
+                  </View>
+                ))}
+                <Text style={styles.qualityNote}>{previous.length} earlier valid assessment{previous.length === 1 ? "" : "s"} on record.</Text>
+              </View>
+            )}
 
             <View style={styles.disclaimer} testID="summary-disclaimer">
               <Ionicons name="information-circle-outline" size={16} color={colors.brandPrimary} />
@@ -121,6 +163,10 @@ function InfoCell({ label, value }: { label: string; value: string }) {
       <Text style={styles.infoValue}>{value}</Text>
     </View>
   );
+}
+
+function shortDate(iso: string) {
+  return new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
 const useStyles = makeStyles((colors) => ({
@@ -160,6 +206,13 @@ const useStyles = makeStyles((colors) => ({
   metricUnit: { color: colors.muted, fontSize: 10, marginTop: 2 },
   qualityNote: { color: colors.muted, fontSize: 12, lineHeight: 18, marginTop: 10 },
   baselineText: { color: colors.onSurfaceSecondary, fontSize: 14, lineHeight: 21 },
+  baselineHeader: { flexDirection: "row", marginTop: 14, paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: colors.borderStrong },
+  baselineHeaderText: { color: colors.muted, fontSize: 11, fontWeight: "800", letterSpacing: 0.6 },
+  baselineRow: { flexDirection: "row", paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.divider },
+  baselineCell: { flex: 1, textAlign: "right" },
+  baselineLabelCell: { flex: 2, textAlign: "left" },
+  baselineLabel: { color: colors.onSurfaceSecondary, fontSize: 13 },
+  baselineValue: { color: colors.onSurface, fontSize: 15, fontWeight: "700", fontVariant: ["tabular-nums"] },
   disclaimer: {
     flexDirection: "row",
     alignItems: "flex-start",

@@ -1,0 +1,24 @@
+{
+  "summary": "Full regression on Expo web preview at 390x844 passed end-to-end for all 7 requested scenarios. Home (MediaPipe row + Available storage row) → new-assessment → Patient Details (name/age 58/female/knee/170/72) → Questionnaire (14 base questions, q10=no & q14=no so no conditionals) → Review → Setup (sit_to_stand) → Camera. With camera GRANTED the badge transitions STARTING CAMERA → LOADING POSE MODEL → READY in ~2 s. Complete with zero pose frames produces the quality-review card (\"Movement quality insufficient\", \"no person was detected\"); RETRY returns to READY; SAVE AS INSUFFICIENT persists a record with Quality: Insufficient and every metric slot showing '--'. Synthetic pose injection (120 frames, 33 ms apart, knee flex 0..90° via world-space ankle rotation around the knee) yields VALID summary: Knee ROM 90°, Left/Right ROM 90°, Peak angular velocity 70°/s, Repetitions 1, Pose visibility 95%; provider text is 'MediaPipe pose (on device)' with '0 raw frames stored separately · local storage'. First VALID summary correctly shows baseline-empty. A second synthetic session for the same patientId+test renders baseline-table with columns 'Metric | This | Sep 26' and one prior valid row per metric plus '1 earlier valid assessment on record'. History shows both records newest-first, each labelled 'Camera metrics: Valid'; tapping a history item opens its summary and Home HISTORY tile updates to '2 saved'. Permission-denied path shows the permission gate, continue-without-camera-button saves a record with Quality 'Not available' and metrics '--'. 'Not a diagnosis' disclaimer present on every summary; no risk % / risk-score wording anywhere (only the disclaimer's own explicit disavowal of risk/probability). Prior iteration_2 pointerEvents warning is fixed (moved into styles.cameraOverlay in camera-assessment.tsx:454).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": []
+  },
+  "test_report_links": ["/tmp/final_home.png"],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "movementTracker.finalize is deterministic and produced clean 90° ROM / 1 rep / 95% visibility for the specified synthetic 120-frame oscillation. Signal-processing thresholds (MIN_FRAMES_VALID=30, MIN_DURATION_VALID_S=3, MIN_MEAN_VISIBILITY_VALID=0.5) match the quality gates called out in the spec.",
+    "assessment-summary shows 'local storage' rather than 'SQLite' on web preview because storageEngine !== 'sqlite'. This is expected and matches the spec's note that web uses the AsyncStorage fallback.",
+    "getBaseline correctly filters to earlier VALID assessments of the same patientId+test — the insufficient-quality record left over from the retry flow is not surfaced as a baseline row, and the first valid session shows baseline-empty while the second shows baseline-table."
+  ],
+  "updated_files": ["/app/test_reports/iteration_3.json"],
+  "success_rate": {"backend": "not tested (frontend-only request)", "frontend": "100%"},
+  "seed_data_creation": "Cleared localStorage at the start of each browser_automation run; final run left 2 valid sit-to-stand assessments for patient 'Baseline Tester' plus a permission-denied 'Not available' record for 'No Cam User' in AsyncStorage on the web preview.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Each browser_automation invocation gets a fresh browser context (localStorage does not persist between calls), so multi-session baseline tests must run all sessions inside a single Playwright script. Camera permission MUST be granted via context.grant_permissions(['camera'], origin=...) BEFORE navigation for expo-camera's useCameraPermissions to report granted. MediaPipe Pose Landmarker loads from CDN in ~2 s in this environment (well under the 60 s budget). Synthetic pose messages are posted with window.postMessage(JSON.stringify({type:'pose', t, img, world}), '*'); the PoseCamera.web.tsx window listener requires the payload to be a string that startsWith('{'). Landmarks 11,12,23..32 were populated with visibility 0.95; world-space ankle placed at [sin(flex)*0.45, 0.45+cos(flex)*0.45, 0] and knee at [0,0.45,0], hip at origin — which is what movementTracker.kneeFlexion expects (uses world coords when present, falls back to img). Sit-to-stand summary testIDs use the tracker feature keys (summary-metric-kneeRomDeg, summary-metric-repetitions, summary-metric-poseVisibility, summary-metric-peakAngularVelocityDegS, summary-metric-leftKneeRomDeg, summary-metric-rightKneeRomDeg).",
+  "rca_of_issue": "No functional issues reproduced this iteration. All previous action items from iteration_2 (pointerEvents deprecation) are resolved: pointerEvents is now inside the StyleSheet cameraOverlay style at camera-assessment.tsx:454 rather than as a prop."
+}
