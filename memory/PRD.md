@@ -35,6 +35,18 @@ The supplied camera prototype contains real Python/OpenCV/MediaPipe logic for po
 
 ## Implemented with dates
 
+### 2026-09-26 — Checkpoint 3
+
+- Review "Confirm & Continue" now routes into Assessment Setup.
+- Assessment Setup screen: patient/region tags, movement test chooser (Sit-to-stand, Walking, Knee flexion, Squat), test-specific "How to move" steps, and a Camera Placement card (distance, height, lighting, clothing, space).
+- Camera Assessment screen via `expo-camera`: truthful permission flow (undetermined → allow; denied → try again; blocked → Open Settings), "Continue without camera" fallback, live back-camera preview with framing guide, state badge (STARTING CAMERA / READY / ASSESSING / SAVING), real elapsed timer, and six metric slots (Knee ROM, peak angular velocity, cadence, step symmetry, stance time, pose visibility) fixed at `--` / Not available.
+- Local `Assessment` record (`src/types/assessment.ts`, `assessmentStorage.ts`): snapshot of questionnaire answers, movement test, camera permission state, real session duration, camera features all `null` (provider "none"), quality `NOT_AVAILABLE`, schema version 1. Saved only on user action; nothing seeded.
+- Assessment Summary screen: saved banner, patient/test/region/session info, quality state, `--` metrics, baseline note, mandatory "Not a diagnosis" disclaimer.
+- History screen: newest-first list with patient, date, region, test, camera-metric status; empty state; pull-to-refresh; optional per-patient filter; tap opens summary.
+- Home: HISTORY tile tappable with live count; Camera status reflects real permission (Not yet allowed / Permission denied / Ready).
+- `app.json`: expo-camera plugin, iOS NSCameraUsageDescription, Android CAMERA permission.
+- Lint, TypeScript, and end-to-end testing agent pass (live camera path and no-camera path).
+
 ### 2026-09-26 — Checkpoint 2
 
 - Added structured 14-question questionnaire with two conditional injury follow-ups (Q10a/Q10b) and one conditional joint-condition follow-up (Q14a), for up to 17 visible questions.
@@ -88,6 +100,6 @@ The supplied camera prototype contains real Python/OpenCV/MediaPipe logic for po
 
 ## Next tasks
 
-1. Checkpoint 3: Assessment Setup screen and real camera permission/live preview via expo-camera (metrics remain `--`).
-2. Wire completed questionnaire draft into the movement assessment step.
-3. Then implement on-device pose feature adaptation and assessment persistence checkpoints.
+1. Checkpoint 4: on-device pose provider (`CameraFeatureProvider`) adapting the supplied MediaPipe measurement logic; replace `--` only with real values.
+2. Checkpoint 5: migrate AsyncStorage entities (Patient, QuestionnaireDraft, Assessment) to expo-sqlite relational schema.
+3. Checkpoint 6: personal baseline computed from prior VALID assessments; Patients list screen.

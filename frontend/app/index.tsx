@@ -1,10 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useCameraPermissions } from "expo-camera";
+import { useFocusEffect, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { getAssessmentCount } from "@/src/utils/storage/assessmentStorage";
 import { getPatientCount } from "@/src/utils/storage/patientStorage";
 import { makeStyles, useTheme } from "@/src/theme";
 
@@ -16,10 +18,21 @@ export default function Index() {
   const { colors } = useTheme();
   const styles = useStyles();
   const [patientCount, setPatientCount] = useState(0);
+  const [assessmentCount, setAssessmentCount] = useState(0);
+  const [cameraPermission] = useCameraPermissions();
 
-  useEffect(() => {
-    getPatientCount().then(setPatientCount);
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      getPatientCount().then(setPatientCount);
+      getAssessmentCount().then(setAssessmentCount);
+    }, []),
+  );
+
+  const cameraStatus: { value: string; tone: StatusTone } = cameraPermission?.granted
+    ? { value: "Ready", tone: "success" }
+    : cameraPermission?.status === "denied"
+      ? { value: "Permission denied", tone: "warning" }
+      : { value: "Not yet allowed", tone: "warning" };
 
   return (
     <View style={styles.screen} testID="home-screen">
@@ -58,7 +71,13 @@ export default function Index() {
 
         <View style={styles.secondaryActions}>
           <HomeLink icon="people-outline" label="PATIENTS" detail={`${patientCount} saved locally`} />
-          <HomeLink icon="time-outline" label="HISTORY" detail="No assessments yet" />
+          <HomeLink
+            icon="time-outline"
+            label="HISTORY"
+            detail={assessmentCount === 0 ? "No assessments yet" : `${assessmentCount} saved`}
+            onPress={() => router.push("/history")}
+            testID="home-history-link"
+          />
           <HomeLink icon="settings-outline" label="SETTINGS" detail="Device and model status" />
         </View>
 
@@ -68,7 +87,7 @@ export default function Index() {
         </View>
 
         <View style={styles.statusPanel}>
-          <StatusRow icon="camera-outline" label="Camera" value="Unavailable" tone="warning" />
+          <StatusRow icon="camera-outline" label="Camera" value={cameraStatus.value} tone={cameraStatus.tone} />
           <StatusRow icon="save-outline" label="Local storage" value="Available" tone="success" />
           <StatusRow icon="hardware-chip-outline" label="ML model" value="Not installed" tone="muted" />
           <StatusRow icon="bluetooth-outline" label="BLE" value="Not connected" tone="muted" />
@@ -83,16 +102,35 @@ export default function Index() {
   );
 }
 
-function HomeLink({ icon, label, detail }: { icon: keyof typeof Ionicons.glyphMap; label: string; detail: string }) {
+function HomeLink({
+  icon,
+  label,
+  detail,
+  onPress,
+  testID,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  detail: string;
+  onPress?: () => void;
+  testID?: string;
+}) {
   const { colors } = useTheme();
   const styles = useStyles();
 
   return (
-    <View style={styles.homeLink} accessibilityLabel={`${label}. ${detail}`}>
+    <Pressable
+      onPress={onPress}
+      disabled={!onPress}
+      testID={testID}
+      accessibilityRole={onPress ? "button" : undefined}
+      accessibilityLabel={`${label}. ${detail}`}
+      style={({ pressed }) => [styles.homeLink, pressed && onPress && styles.pressed]}
+    >
       <Ionicons name={icon} size={21} color={colors.brandPrimary} />
       <Text style={styles.homeLinkLabel}>{label}</Text>
       <Text style={styles.homeLinkDetail}>{detail}</Text>
-    </View>
+    </Pressable>
   );
 }
 

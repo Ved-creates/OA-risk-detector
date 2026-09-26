@@ -41,10 +41,8 @@ export default function QuestionnaireReview() {
     setSaving(true);
     await saveDraft(patientId, answers, true);
     setSaving(false);
-    // Camera assessment route is Checkpoint 3. For now return to Home; the
-    // completed questionnaire is persisted for the movement step to pick up.
-    router.replace({
-      pathname: "/",
+    router.push({
+      pathname: "/assessment-setup",
       params: { patientId, patientName: patientName ?? "" },
     });
   };
@@ -132,7 +130,7 @@ export default function QuestionnaireReview() {
         </Pressable>
 
         <Text style={styles.footerHint}>
-          The movement assessment step is added in the next checkpoint.
+          Next: assessment setup and camera movement test.
         </Text>
       </ScrollView>
     </View>
