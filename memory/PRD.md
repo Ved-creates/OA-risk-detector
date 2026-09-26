@@ -35,6 +35,18 @@ The supplied camera prototype contains real Python/OpenCV/MediaPipe logic for po
 
 ## Implemented with dates
 
+### 2026-09-26 — Checkpoint 2
+
+- Added structured 14-question questionnaire with two conditional injury follow-ups (Q10a/Q10b) and one conditional joint-condition follow-up (Q14a), for up to 17 visible questions.
+- Implemented one-question-at-a-time UI with horizontal slide transitions (right→left for next, left→right for back) using Reanimated.
+- Support for single-choice, multi-choice, and 0–10 scale question types with a warm clinical answer style.
+- Progress bar and question counter that recompute total dynamically when conditional questions appear or hide.
+- Answers persist across back navigation, are auto-saved locally as a per-patient draft, and hydrate on re-entry.
+- "None of these" is exclusive in the multi-select activities question.
+- Review screen groups answers by section, formats scale and multi-choice, and includes the "Not a diagnosis" style disclaimer.
+- Patient Details "Continue" now routes to the questionnaire; the questionnaire never computes an OA score.
+- Lint, TypeScript compilation, and mobile preview smoke tests pass.
+
 ### 2026-09-25 — Checkpoint 1
 
 - Replaced the starter image screen with the OA Risk Detector home screen.
@@ -52,9 +64,7 @@ The supplied camera prototype contains real Python/OpenCV/MediaPipe logic for po
 
 ### P0 — required for the core app
 
-- Questionnaire with 17 dynamically visible questions, one-question horizontal transitions, multi-select activities, answer preservation, and local structured response storage.
-- Questionnaire review and assessment setup screens.
-- Real mobile camera integration and permission handling.
+- Real mobile camera integration and permission handling (next checkpoint).
 - On-device pose provider connected to the supplied measurement concepts without fake values.
 - Assessment, camera feature, and assessment quality persistence.
 - Assessment summary with quality state, measured values, baseline comparison, and mandatory non-diagnostic disclaimer.
@@ -78,7 +88,6 @@ The supplied camera prototype contains real Python/OpenCV/MediaPipe logic for po
 
 ## Next tasks
 
-1. Implement Checkpoint 2 questionnaire data model and one-question navigation.
-2. Add conditional injury and other-joint-condition follow-ups without erasing answers.
-3. Add questionnaire review before movement assessment setup.
-4. Then implement the assessment setup and real camera integration checkpoints.
+1. Checkpoint 3: Assessment Setup screen and real camera permission/live preview via expo-camera (metrics remain `--`).
+2. Wire completed questionnaire draft into the movement assessment step.
+3. Then implement on-device pose feature adaptation and assessment persistence checkpoints.

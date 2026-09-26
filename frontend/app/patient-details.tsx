@@ -51,7 +51,10 @@ export default function PatientDetails() {
 
   const handleContinue = async () => {
     if (savedPatientId) {
-      router.replace("/");
+      router.replace({
+        pathname: "/questionnaire",
+        params: { patientId: savedPatientId, patientName: form.name.trim() },
+      });
       return;
     }
 
@@ -178,7 +181,7 @@ export default function PatientDetails() {
             accessibilityRole="button"
             style={({ pressed }) => [styles.continueButton, pressed && styles.pressed, saving && styles.disabled]}
           >
-            {saving ? <ActivityIndicator color={colors.onBrandPrimary} /> : <Text style={styles.continueText}>{savedPatientId ? "RETURN TO HOME" : "CONTINUE"}</Text>}
+            {saving ? <ActivityIndicator color={colors.onBrandPrimary} /> : <Text style={styles.continueText}>{savedPatientId ? "CONTINUE TO QUESTIONNAIRE" : "CONTINUE"}</Text>}
           </Pressable>
         </ScrollView>
       </KeyboardAvoidingView>
